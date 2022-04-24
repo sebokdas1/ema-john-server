@@ -20,10 +20,25 @@ async function run() {
 
         app.get('/product', async (req, res) => {
             const query = {};
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
             const cursor = productCollection.find(query);
-            const products = await cursor.toArray();
+            let products;
+            if (page || size) {
+                products = await cursor.skip(page * size).limit(size).toArray();
+            }
+            else {
+
+                products = await cursor.toArray();
+            }
             res.send(products);
         });
+
+        //for pagination
+        app.get('/productCount', async (req, res) => {
+            const count = await productCollection.estimatedDocumentCount();
+            res.send({ count });
+        })
     }
     finally {
 
